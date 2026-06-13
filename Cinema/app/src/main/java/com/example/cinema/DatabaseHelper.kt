@@ -45,14 +45,13 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         values.put(COLUMN_COST, movie.cost)
         
         val id = db.insert(TABLE_MOVIES, null, values)
-        db.close()
         return id
     }
 
     fun getAllMovies(): List<Movie> {
         val movieList = mutableListOf<Movie>()
         val db = this.readableDatabase
-        val cursor = db.rawQuery("SELECT * FROM $TABLE_MOVIES", null)
+        val cursor = db.query(TABLE_MOVIES, null, null, null, null, null, null)
 
         if (cursor.moveToFirst()) {
             do {
@@ -68,7 +67,6 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
             } while (cursor.moveToNext())
         }
         cursor.close()
-        db.close()
         return movieList
     }
 }

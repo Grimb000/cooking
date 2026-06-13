@@ -29,9 +29,13 @@ class AddMovieActivity : ComponentActivity() {
                 ) {
                     AddMovieScreen(
                         onSave = { movie ->
-                            dbHelper.addMovie(movie)
-                            Toast.makeText(this, "Movie saved", Toast.LENGTH_SHORT).show()
-                            finish()
+                            Thread {
+                                dbHelper.addMovie(movie)
+                                runOnUiThread {
+                                    Toast.makeText(this@AddMovieActivity, "Movie saved", Toast.LENGTH_SHORT).show()
+                                    finish()
+                                }
+                            }.start()
                         },
                         onCancel = {
                             finish()
@@ -92,7 +96,7 @@ fun AddMovieScreen(onSave: (Movie) -> Unit, onCancel: () -> Unit) {
             value = cost,
             onValueChange = { cost = it },
             label = { Text("Cost") },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
             modifier = Modifier.fillMaxWidth()
         )
 
@@ -104,9 +108,14 @@ fun AddMovieScreen(onSave: (Movie) -> Unit, onCancel: () -> Unit) {
                 Text("Cancel")
             }
             Button(onClick = {
+                if (title.isBlank() || director.isBlank() || year.isBlank() || genre.isBlank() || cost.isBlank()) {
+                    return@Button
+                }
                 val y = year.toIntOrNull() ?: 0
                 val c = cost.toDoubleOrNull() ?: 0.0
-                onSave(Movie(title = title, director = director, year = y, genre = genre, cost = c))
+                if (y > 0 && c >= 0.0) {
+                    onSave(Movie(title = title, director = director, year = y, genre = genre, cost = c))
+                }
             }) {
                 Text("Save")
             }

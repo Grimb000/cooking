@@ -35,12 +35,6 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-
-    override fun onResume() {
-        super.onResume()
-        // We'll handle refresh differently, or recreate the activity.
-        // For simplicity, we just added a Refresh button.
-    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -49,10 +43,15 @@ fun MainScreen(dbHelper: DatabaseHelper, onAddMovie: () -> Unit) {
     var titleFilter by remember { mutableStateOf("") }
     var directorFilter by remember { mutableStateOf("") }
     
-    val allMovies = remember { mutableStateOf(dbHelper.getAllMovies()) }
+    val allMovies = remember { mutableStateOf<List<Movie>>(emptyList()) }
 
     fun refresh() {
-        allMovies.value = dbHelper.getAllMovies()
+        Thread {
+            val movies = dbHelper.getAllMovies()
+            // In compose we can just assign the state and compose will handle it, 
+            // but just to be safe on the thread issue
+            allMovies.value = movies
+        }.start()
     }
 
     LaunchedEffect(Unit) {
